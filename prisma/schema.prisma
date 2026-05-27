@@ -1,13 +1,131 @@
-// This is your Prisma schema file
-// It defines your database structure - like a blueprint for your storage
+// This is your database blueprint
+// In Prisma version 7 the database URLs live in prisma.config.ts
+// This file only defines your tables and their structure
 
 generator client {
   provider = "prisma-client-js"
   output   = "../app/generated/prisma"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+}
+
+// =====================
+// SOURCE MODEL
+// Stores the websites we are allowed to scrape
+// =====================
+model Source {
+  id            String    @id @default(cuid())
+  name          String
+  url           String    @unique
+  isActive      Boolean   @default(true)
+  crawlInterval Int       @default(30)
+  lastCrawledAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  jobs      Job[]
+  crawlLogs CrawlLog[]
+}
+
+// =====================
+// JOB MODEL
+// Stores every job posting found by the scraper
+// =====================
+model Job {
+  id              String    @id @default(cuid())
+  title           String
+  company         String
+  location        String
+  description     String    @db.Text
+  salary          String?
+  jobType         String?
+  category        String?
+  applicationUrl  String
+  sourceUrl       String
+  slug            String    @unique
+  status          JobStatus @default(DRAFT)
+  aiSummary       String?   @db.Text
+  aiEnhancedTitle String?
+  expiresAt       DateTime?
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  sourceId        String
+  source          Source    @relation(fields: [sourceId], references: [id])
+
+  approvalHistory ApprovalHistory[]
+}
+
+// =====================
+// JOB STATUS
+// Every job is always in one of these four states
+// =====================
+enum JobStatus {
+  DRAFT      // Just found by scraper - awaiting your review
+  PUBLISHED  // You approved it - visible to public
+  REJECTED   // You rejected it - hidden from public
+  EXPIRED    // Past its expiry date - hidden from public
+}
+
+// =====================
+// APPROVAL HISTORY MODEL
+// Records every decision you make on a job
+// =====================
+model ApprovalHistory {
+  id        String   @id @default(cuid())
+  action    String
+  note      String?
+  createdAt DateTime @default(now())
+
+  jobId  String
+  job    Job    @relation(fields: [jobId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+// =====================
+// CRAWL LOG MODEL
+// Records every time the scraper runs
+// =====================
+model CrawlLog {
+  id           String    @id @default(cuid())
+  status       String
+  jobsFound    Int       @default(0)
+  jobsAdded    Int       @default(0)
+  duplicates   Int       @default(0)
+  errorMessage String?
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+
+  sourceId String
+  source   Source @relation(fields: [sourceId], references: [id])
+}
+
+// =====================
+// USER MODEL
+// Stores admin accounts
+// =====================
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  approvalHistory ApprovalHistory[]
+}
+
+// =====================
+// ROLE
+// What type of user someone is
+// =====================
+enum Role {
+  ADMIN
+  SUPERADMIN
 }
