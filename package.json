@@ -33,3 +33,11 @@
     "typescript": "^5"
   }
 }
+"scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "seed": "ts-node --project tsconfig.seed.json prisma/seed.ts",
+    "postinstall": "prisma generate"
+  },
