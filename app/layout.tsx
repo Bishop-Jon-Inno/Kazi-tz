@@ -15,8 +15,35 @@ const geist = Geist({
 
 // Metadata appears in browser tabs and Google search results
 export const metadata: Metadata = {
-  title: "KaziTZ — Jobs in Tanzania and East Africa",
-  description: "Find the latest job opportunities in Tanzania, Kenya, Uganda and across East Africa. Updated every 30 minutes.",
+  title: {
+    default: "KaziTZ — Jobs in Tanzania and East Africa",
+    template: "%s | KaziTZ"
+  },
+  description: "Find the latest job opportunities in Tanzania, Kenya, Uganda and across East Africa. Updated every 30 minutes with new vacancies.",
+  keywords: ["jobs in Tanzania", "nafasi za kazi", "ajira Tanzania", "jobs Dar es Salaam", "East Africa jobs", "Tanzania employment"],
+  authors: [{ name: "KaziTZ" }],
+  creator: "KaziTZ",
+  openGraph: {
+    type: "website",
+    locale: "en_TZ",
+    url: "https://kazitz.com",
+    siteName: "KaziTZ",
+    title: "KaziTZ — Jobs in Tanzania and East Africa",
+    description: "Find the latest job opportunities in Tanzania and East Africa. Updated every 30 minutes.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "KaziTZ — Jobs in Tanzania and East Africa",
+    description: "Find the latest job opportunities in Tanzania and East Africa.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    }
+  }
 }
 
 export default function RootLayout({
