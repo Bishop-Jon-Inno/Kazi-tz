@@ -1,4 +1,6 @@
-import { chromium } from "playwright"
+import { writeFileSync } from "fs"
+
+const content = `import { chromium } from "playwright"
 import { jobExists, saveJobDraft, logCrawl, getSource } from "./scraper-utils"
 import { notifyNewDraft, notifyScraperError, notifyCrawlComplete } from "../telegram"
 
@@ -159,3 +161,7 @@ export async function scrapeTanzajob() {
   console.log("Tanzajob done: " + jobsAdded + " new, " + duplicates + " duplicates")
   return { jobsFound, jobsAdded, duplicates }
 }
+`
+
+writeFileSync("lib/scrapers/tanzajob.ts", content)
+console.log("tanzajob.ts rewritten successfully")
