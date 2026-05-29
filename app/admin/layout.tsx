@@ -1,16 +1,11 @@
 import { auth } from "../../lib/auth"
 import { redirect } from "next/navigation"
-import { headers } from "next/headers"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const headersList = await headers()
-  const pathname = headersList.get("x-invoke-path") || ""
+  const session = await auth()
 
-  if (!pathname.includes("/login")) {
-    const session = await auth()
-    if (!session) {
-      redirect("/admin/login")
-    }
+  if (!session) {
+    redirect("/login")
   }
 
   return (

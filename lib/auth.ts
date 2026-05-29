@@ -14,7 +14,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         const adminEmail = process.env.ADMIN_EMAIL
         const adminPassword = process.env.ADMIN_PASSWORD
-
         if (
           credentials?.email === adminEmail &&
           credentials?.password === adminPassword
@@ -25,13 +24,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             name: "Admin",
           }
         }
-
         return null
       },
     }),
   ],
   pages: {
-    signIn: "/admin/login",
+    signIn: "/login",
   },
   session: {
     strategy: "jwt",
