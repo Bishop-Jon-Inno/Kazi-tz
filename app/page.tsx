@@ -2,6 +2,8 @@
 // This is the first page visitors see
 // It shows the latest published jobs and a search bar
 
+export const revalidate = 0
+
 import JobCard from "../components/JobCard"
 import { getPublishedJobs } from "../lib/jobs"
 
