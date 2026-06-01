@@ -27,9 +27,9 @@ export async function scrapeTanzajob() {
     console.log("Scraping Tanzajob...")
 
     await page.goto("https://www.tanzajob.com/job-vacancies-tanzania", {
-      waitUntil: "networkidle",
-      timeout: 30000
-    })
+  waitUntil: "domcontentloaded",
+  timeout: 60000
+})
 
     const jobCards = await page.evaluate(() => {
       const cards: { url: string; title: string; company: string }[] = []
@@ -56,9 +56,9 @@ export async function scrapeTanzajob() {
         }
 
         await page.goto(card.url, {
-          waitUntil: "networkidle",
-          timeout: 20000
-        })
+  waitUntil: "domcontentloaded",
+  timeout: 60000
+})
 
         const jobData = await page.evaluate(() => {
           const jsonLdScript = document.querySelector("script[type='application/ld+json']")
