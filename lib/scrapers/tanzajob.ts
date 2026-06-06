@@ -21,15 +21,25 @@ export async function scrapeTanzajob() {
     const page = await browser.newPage()
 
     await page.setExtraHTTPHeaders({
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     })
 
     console.log("Scraping Tanzajob...")
 
     await page.goto("https://www.tanzajob.com/job-vacancies-tanzania", {
-  waitUntil: "domcontentloaded",
-  timeout: 60000
-})
+      waitUntil: "domcontentloaded",
+      timeout: 60000
+    })
+
+    await page.waitForTimeout(5000)
+
+    const pageTitle = await page.title()
+    console.log("Page title:", pageTitle)
+
+    const cardCount = await page.evaluate(() => {
+      return document.querySelectorAll("div.card.card-job").length
+    })
+    console.log("Cards found with selector:", cardCount)
 
     const jobCards = await page.evaluate(() => {
       const cards: { url: string; title: string; company: string }[] = []
@@ -37,9 +47,7 @@ export async function scrapeTanzajob() {
         const url = card.getAttribute("data-href") || ""
         const title = card.querySelector("h3")?.textContent?.trim() || ""
         const company = card.querySelector("a.company-name")?.textContent?.trim() || ""
-        if (url && title) {
-          cards.push({ url, title, company })
-        }
+        if (url && title) { cards.push({ url, title, company }) }
       })
       return cards
     })
@@ -50,15 +58,14 @@ export async function scrapeTanzajob() {
     for (const card of jobCards) {
       try {
         const exists = await jobExists(card.url)
-        if (exists) {
-          duplicates++
-          continue
-        }
+        if (exists) { duplicates++; continue }
 
         await page.goto(card.url, {
-  waitUntil: "domcontentloaded",
-  timeout: 60000
-})
+          waitUntil: "domcontentloaded",
+          timeout: 60000
+        })
+
+        await page.waitForTimeout(2000)
 
         const jobData = await page.evaluate(() => {
           const jsonLdScript = document.querySelector("script[type='application/ld+json']")
@@ -78,25 +85,21 @@ export async function scrapeTanzajob() {
                   company: data.hiringOrganization?.name || "",
                 }
               }
-            } catch {
-              // fall through
-            }
+            } catch { }
           }
 
-          const getText = (selector: string) =>
-            document.querySelector(selector)?.textContent?.trim() || ""
-
-          const title = getText("h1.text-center") || getText("h1")
-          const description = getText("div.job-description") + " " + getText("div.job-qualifications")
-          const location = document.querySelector("li.withicon.location-dot span")?.textContent?.trim() || "Tanzania"
-          const jobType = document.querySelector("li.withicon.file-signature span")?.textContent?.trim() || null
-
-          return { title, description, location, jobType, salary: null, company: "" }
+          const getText = (selector: string) => document.querySelector(selector)?.textContent?.trim() || ""
+          return {
+            title: getText("h1.text-center") || getText("h1"),
+            description: getText("div.job-description") + " " + getText("div.job-qualifications"),
+            location: document.querySelector("li.withicon.location-dot span")?.textContent?.trim() || "Tanzania",
+            jobType: document.querySelector("li.withicon.file-signature span")?.textContent?.trim() || null,
+            salary: null,
+            company: "",
+          }
         })
 
-        if (!jobData.title || !jobData.description) {
-          continue
-        }
+        if (!jobData.title || !jobData.description) { continue }
 
         const company = jobData.company || card.company || "Unknown"
 
