@@ -1,7 +1,6 @@
 import * as dotenv from "dotenv"
 dotenv.config()
 
-// Register ts-node to handle TypeScript files
 import { createRequire } from "module"
 const require = createRequire(import.meta.url)
 
@@ -10,8 +9,8 @@ require("ts-node").register({
   transpileOnly: true
 })
 
-const { scrapeTanzajob } = require("./lib/scrapers/tanzajob.ts")
+const { scrapeMabumbe } = require("./lib/scrapers/mabumbe.ts")
 
-console.log("Starting Tanzajob scraper...")
-const result = await scrapeTanzajob()
+console.log("Starting Mabumbe scraper test...")
+const result = await scrapeMabumbe()
 console.log("Result:", JSON.stringify(result))

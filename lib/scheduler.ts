@@ -1,7 +1,5 @@
-// Scheduler — runs all scrapers every 30 minutes automatically
-// This file is called by a Next.js API route that Vercel triggers on a schedule
-
 import { scrapeTanzajob } from "./scrapers/tanzajob"
+import { scrapeMabumbe } from "./scrapers/mabumbe"
 import { db } from "./db"
 
 export async function runAllScrapers() {
@@ -9,10 +7,10 @@ export async function runAllScrapers() {
 
   const results = {
     tanzajob: null as any,
+    mabumbe: null as any,
     errors: [] as string[],
   }
 
-  // Run Tanzajob scraper
   try {
     console.log("Running Tanzajob scraper...")
     results.tanzajob = await scrapeTanzajob()
@@ -21,7 +19,14 @@ export async function runAllScrapers() {
     results.errors.push("Tanzajob: " + String(error))
   }
 
-  // Update last crawled timestamp for all active sources
+  try {
+    console.log("Running Mabumbe scraper...")
+    results.mabumbe = await scrapeMabumbe()
+  } catch (error) {
+    console.error("Mabumbe scraper failed:", error)
+    results.errors.push("Mabumbe: " + String(error))
+  }
+
   await db.source.updateMany({
     where: { isActive: true },
     data: { lastCrawledAt: new Date() }

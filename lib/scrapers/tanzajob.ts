@@ -1,9 +1,6 @@
-import { chromium } from "playwright-extra"
-import StealthPlugin from "playwright-extra-plugin-stealth"
+import { chromium } from "playwright"
 import { jobExists, saveJobDraft, logCrawl, getSource } from "./scraper-utils"
 import { notifyNewDraft, notifyScraperError, notifyCrawlComplete } from "../telegram"
-
-chromium.use(StealthPlugin())
 
 export async function scrapeTanzajob() {
   const startedAt = new Date()
@@ -23,22 +20,21 @@ export async function scrapeTanzajob() {
     browser = await chromium.launch({ headless: true })
     const page = await browser.newPage()
 
-    console.log("Scraping Tanzajob with stealth mode...")
+    await page.setExtraHTTPHeaders({
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    })
+
+    console.log("Scraping Tanzajob...")
 
     await page.goto("https://www.tanzajob.com/job-vacancies-tanzania", {
       waitUntil: "domcontentloaded",
       timeout: 60000
     })
 
-    await page.waitForTimeout(8000)
+    await page.waitForTimeout(5000)
 
     const pageTitle = await page.title()
     console.log("Page title:", pageTitle)
-
-    const cardCount = await page.evaluate(() => {
-      return document.querySelectorAll("div.card.card-job").length
-    })
-    console.log("Cards found with selector:", cardCount)
 
     const jobCards = await page.evaluate(() => {
       const cards: { url: string; title: string; company: string }[] = []
@@ -64,7 +60,7 @@ export async function scrapeTanzajob() {
           timeout: 60000
         })
 
-        await page.waitForTimeout(3000)
+        await page.waitForTimeout(2000)
 
         const jobData = await page.evaluate(() => {
           const jsonLdScript = document.querySelector("script[type='application/ld+json']")
