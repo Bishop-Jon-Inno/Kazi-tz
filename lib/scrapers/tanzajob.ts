@@ -1,6 +1,9 @@
-import { chromium } from "playwright"
+import { chromium } from "playwright-extra"
+import StealthPlugin from "playwright-extra-plugin-stealth"
 import { jobExists, saveJobDraft, logCrawl, getSource } from "./scraper-utils"
 import { notifyNewDraft, notifyScraperError, notifyCrawlComplete } from "../telegram"
+
+chromium.use(StealthPlugin())
 
 export async function scrapeTanzajob() {
   const startedAt = new Date()
@@ -20,18 +23,14 @@ export async function scrapeTanzajob() {
     browser = await chromium.launch({ headless: true })
     const page = await browser.newPage()
 
-    await page.setExtraHTTPHeaders({
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    })
-
-    console.log("Scraping Tanzajob...")
+    console.log("Scraping Tanzajob with stealth mode...")
 
     await page.goto("https://www.tanzajob.com/job-vacancies-tanzania", {
       waitUntil: "domcontentloaded",
       timeout: 60000
     })
 
-    await page.waitForTimeout(5000)
+    await page.waitForTimeout(8000)
 
     const pageTitle = await page.title()
     console.log("Page title:", pageTitle)
@@ -65,7 +64,7 @@ export async function scrapeTanzajob() {
           timeout: 60000
         })
 
-        await page.waitForTimeout(2000)
+        await page.waitForTimeout(3000)
 
         const jobData = await page.evaluate(() => {
           const jsonLdScript = document.querySelector("script[type='application/ld+json']")
